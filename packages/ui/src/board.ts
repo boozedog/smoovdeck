@@ -1,7 +1,7 @@
 import { Schema as S } from 'effect'
 import type { HtmlBuilder } from 'foldkit/html'
 
-import { Badge, Stack, Table, Text } from '@foldstryx/foldkit'
+import { Badge, Stack, Table, Text, elAttrs, sxAttrs } from '@foldstryx/foldkit'
 
 import type { Message as AppMessage } from './model.js'
 
@@ -22,9 +22,14 @@ export const STAGES: ReadonlyArray<Stage> = [
   'fish',
 ]
 
+export const StageStatus = S.Literals(['idle', 'pending'])
+export type StageStatus = typeof StageStatus.Type
+
 export const StageCell = S.Struct({
-  status: S.Literal('idle'),
+  status: StageStatus,
   provider: S.String,
+  promptDraft: S.String,
+  transcript: S.Array(S.String),
 })
 export type StageCell = typeof StageCell.Type
 
@@ -66,7 +71,37 @@ const providerForStage = (stage: Stage): string => {
 const idleCell = (stage: Stage): StageCell => ({
   status: 'idle',
   provider: providerForStage(stage),
+  promptDraft: '',
+  transcript: [],
 })
+
+export const findWorkspace = (
+  workspaces: ReadonlyArray<Workspace>,
+  workspaceId: string,
+): Workspace | undefined =>
+  workspaces.find(workspace => workspace.id === workspaceId)
+
+export const updateStageCell = (
+  workspaces: ReadonlyArray<Workspace>,
+  workspaceId: string,
+  stage: Stage,
+  updater: (cell: StageCell) => StageCell,
+): ReadonlyArray<Workspace> =>
+  workspaces.map(workspace => {
+    if (workspace.id !== workspaceId) {
+      return workspace
+    }
+    return {
+      ...workspace,
+      cells: {
+        ...workspace.cells,
+        [stage]: updater(workspace.cells[stage]),
+      },
+    }
+  })
+
+export const dummyTranscriptLine =
+  '(dummy) Session acknowledged your prompt.'
 
 const makeCells = (): WorkspaceCells => ({
   research: idleCell('research'),
@@ -121,66 +156,65 @@ export const view = (
           ),
           Table.tbody(
             config.workspaces.map(workspace =>
-              Table.tr(
-                {
-                  children: [
-                    Table.td(
+              h.keyed('tr')(
+                workspace.id,
+                elAttrs<AppMessage>(sxAttrs(h)),
+                [
+                  Table.td(
+                    {
+                      align: 'plain',
+                      children: [
+                        Text.view(
+                          {
+                            variant: 'mono',
+                            children: workspace.label,
+                          },
+                          h,
+                        ),
+                      ],
+                    },
+                    h,
+                  ),
+                  ...STAGES.map(stage => {
+                    const cell = workspace.cells[stage]
+                    const isSelected =
+                      config.selectedCell?.workspaceId === workspace.id &&
+                      config.selectedCell?.stage === stage
+
+                    return Table.td(
                       {
                         align: 'plain',
+                        onClick: config.onSelectCell(workspace.id, stage),
+                        isPressed: isSelected,
                         children: [
-                          Text.view(
+                          Stack.view(
                             {
-                              variant: 'mono',
-                              children: workspace.label,
+                              gap: 'xs',
+                              children: [
+                                Badge.view(
+                                  {
+                                    label: cell.status,
+                                    variant: 'secondary',
+                                  },
+                                  h,
+                                ),
+                                Text.view(
+                                  {
+                                    variant: 'mutedSm',
+                                    children: cell.provider,
+                                  },
+                                  h,
+                                ),
+                              ],
                             },
                             h,
                           ),
                         ],
                       },
                       h,
-                    ),
-                    ...STAGES.map(stage => {
-                      const cell = workspace.cells[stage]
-                      const isSelected =
-                        config.selectedCell?.workspaceId === workspace.id &&
-                        config.selectedCell?.stage === stage
-
-                      return Table.td(
-                        {
-                          align: 'plain',
-                          onClick: config.onSelectCell(workspace.id, stage),
-                          isPressed: isSelected,
-                          children: [
-                            Stack.view(
-                              {
-                                gap: 'xs',
-                                children: [
-                                  Badge.view(
-                                    {
-                                      label: cell.status,
-                                      variant: 'secondary',
-                                    },
-                                    h,
-                                  ),
-                                  Text.view(
-                                    {
-                                      variant: 'mutedSm',
-                                      children: cell.provider,
-                                    },
-                                    h,
-                                  ),
-                                ],
-                              },
-                              h,
-                            ),
-                          ],
-                        },
-                        h,
-                      )
-                    }),
-                  ],
-                },
-                h,
+                    )
+                  }),
+                ],
               ),
             ),
             h,

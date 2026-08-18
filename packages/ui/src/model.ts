@@ -6,7 +6,9 @@ import {
   Stage,
   SelectedCell,
   Workspace,
+  dummyTranscriptLine,
   dummyWorkspaces,
+  updateStageCell,
 } from './board'
 
 export const Model = S.Struct({
@@ -26,7 +28,26 @@ export const SelectCell = S.Struct({
   stage: Stage,
 })
 
-export const Message = S.Union([ToggleSidebar, SelectCell])
+export const UpdatePromptDraft = S.Struct({
+  _tag: S.Literal('UpdatePromptDraft'),
+  value: S.String,
+})
+
+export const SubmitPrompt = S.Struct({
+  _tag: S.Literal('SubmitPrompt'),
+})
+
+export const AbortPrompt = S.Struct({
+  _tag: S.Literal('AbortPrompt'),
+})
+
+export const Message = S.Union([
+  ToggleSidebar,
+  SelectCell,
+  UpdatePromptDraft,
+  SubmitPrompt,
+  AbortPrompt,
+])
 export type Message = typeof Message.Type
 
 export const init: Runtime.ApplicationInit<Model, Message> = () => [
@@ -37,6 +58,23 @@ export const init: Runtime.ApplicationInit<Model, Message> = () => [
   },
   [],
 ]
+
+const withSelectedCell = (
+  model: Model,
+  apply: (
+    workspaceId: string,
+    stage: SelectedCell['stage'],
+  ) => ReadonlyArray<Workspace>,
+): Model => {
+  const selectedCell = model.selectedCell
+  if (selectedCell === undefined) {
+    return model
+  }
+  return evo(model, {
+    workspaces: () =>
+      apply(selectedCell.workspaceId, selectedCell.stage),
+  })
+}
 
 export const update = (
   model: Model,
@@ -53,6 +91,44 @@ export const update = (
       ],
       SelectCell: ({ workspaceId, stage }) => [
         evo(model, { selectedCell: () => ({ workspaceId, stage }) }),
+        [],
+      ],
+      UpdatePromptDraft: ({ value }) => [
+        withSelectedCell(model, (workspaceId, stage) =>
+          updateStageCell(model.workspaces, workspaceId, stage, cell => ({
+            ...cell,
+            promptDraft: value,
+          })),
+        ),
+        [],
+      ],
+      SubmitPrompt: () => [
+        withSelectedCell(model, (workspaceId, stage) =>
+          updateStageCell(model.workspaces, workspaceId, stage, cell => {
+            if (cell.promptDraft.trim().length === 0) {
+              return cell
+            }
+            return {
+              ...cell,
+              status: 'pending',
+              transcript: [...cell.transcript, dummyTranscriptLine],
+            }
+          }),
+        ),
+        [],
+      ],
+      AbortPrompt: () => [
+        withSelectedCell(model, (workspaceId, stage) =>
+          updateStageCell(model.workspaces, workspaceId, stage, cell => {
+            if (cell.status !== 'pending') {
+              return cell
+            }
+            return {
+              ...cell,
+              status: 'idle',
+            }
+          }),
+        ),
         [],
       ],
     }),

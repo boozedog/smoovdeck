@@ -1,9 +1,10 @@
 import type { Document, HtmlBuilder } from 'foldkit/html'
 
-import { Icon, Sidebar, Text, elAttrs, sxAttrs } from '@foldstryx/foldkit'
+import { Icon, Sidebar, Stack, Text, elAttrs, sxAttrs } from '@foldstryx/foldkit'
 import { sidebarStyles } from '@foldstryx/styles'
 
 import { boardHeaderTitle, view as boardView } from './board'
+import { view as focusedView } from './focused'
 import { type Message, type Model } from './model'
 
 export const view = (model: Model, h: HtmlBuilder<Message>): Document => ({
@@ -37,15 +38,36 @@ export const view = (model: Model, h: HtmlBuilder<Message>): Document => ({
             h,
           ),
         ],
-        children: boardView(
+        children: Stack.view(
           {
-            workspaces: model.workspaces,
-            selectedCell: model.selectedCell,
-            onSelectCell: (workspaceId, stage) => ({
-              _tag: 'SelectCell',
-              workspaceId,
-              stage,
-            }),
+            gap: 'md',
+            children: [
+              boardView(
+                {
+                  workspaces: model.workspaces,
+                  selectedCell: model.selectedCell,
+                  onSelectCell: (workspaceId, stage) => ({
+                    _tag: 'SelectCell',
+                    workspaceId,
+                    stage,
+                  }),
+                },
+                h,
+              ),
+              focusedView(
+                {
+                  workspaces: model.workspaces,
+                  selectedCell: model.selectedCell,
+                  onUpdatePromptDraft: value => ({
+                    _tag: 'UpdatePromptDraft',
+                    value,
+                  }),
+                  onSubmitPrompt: { _tag: 'SubmitPrompt' },
+                  onAbortPrompt: { _tag: 'AbortPrompt' },
+                },
+                h,
+              ),
+            ],
           },
           h,
         ),
