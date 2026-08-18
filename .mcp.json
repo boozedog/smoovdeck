@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "foldkit-devtools": {
+      "command": "nub",
+      "args": ["run", "-s", "--no-check", "devtools-mcp"],
+      "env": {
+        "FOLDKIT_DEVTOOLS_MCP_PORT": "9992"
+      }
+    }
+  }
+}

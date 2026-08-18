@@ -1,0 +1,7 @@
+[mcp_servers.foldkit-devtools]
+command = "nub"
+args = ["run", "-s", "--no-check", "devtools-mcp"]
+enabled = true
+
+[mcp_servers.foldkit-devtools.env]
+FOLDKIT_DEVTOOLS_MCP_PORT = "9992"

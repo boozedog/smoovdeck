@@ -46,3 +46,39 @@ interaction.
 Match foldstryx / Foldkit practice: typed `Model` / `Message` / `update` /
 `view`, Story and Scene tests for interactive behavior, and a real browser
 check for any UI that a user will see.
+
+## Agent UI inspection (foldkit MCP + agent-browser)
+
+Two tools on the **same browser tab** — state vs pixels. Do not add a composite
+MCP until this workflow feels insufficient.
+
+| Need | Tool |
+| --- | --- |
+| Model, message history, replay, dispatch | **`foldkit-devtools` MCP** (`foldkit_*` tools) |
+| Screenshot, a11y snapshot, click, type | **`agent-browser` CLI** (global policy; not MCP) |
+
+**Prerequisites:** `nub run dev` (relay on `127.0.0.1:9992`), app open in a tab.
+Cursor loads MCP from `.cursor/mcp.json` → `.mcp.json`. Restart the agent after
+MCP config changes.
+
+**Same tab:** `foldkit_list_runtimes` lists every connected tab. With multiple
+tabs, pass `runtime_id` on foldkit calls. Default is the most recently connected
+runtime. Drive one tab with `agent-browser --session <name> open …` and target
+that same tab on the relay (or use `agent-browser --auto-connect` to attach to
+an existing Brave window).
+
+**Typical loop:**
+
+1. `agent-browser --session smoovdeck open http://127.0.0.1:5173/`
+2. `foldkit_list_runtimes` — note `connectionId` if several runtimes
+3. Pixels: `agent-browser screenshot`, `snapshot -i`, click/fill by `@ref`
+4. State: `foldkit_get_model`, `foldkit_list_messages`, `foldkit_dispatch_message`
+5. Foldkit dispatch updates the same DOM agent-browser sees; browser typing
+   produces real `Message` entries foldkit can read.
+
+First `agent-browser` use in a task: `agent-browser --help` or
+`agent-browser skills get core --full` when skills are installed. Do not guess
+flags. Do not wire `chrome-devtools-mcp` or `agent-browser mcp`.
+
+**CI / regression:** Vitest browser mode + `toMatchScreenshot` is separate from
+this live loop (not wired in this repo yet).

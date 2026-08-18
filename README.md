@@ -42,6 +42,12 @@ foldstryx.
 
 See [desktop/README.md](./desktop/README.md) for CEF flags and NixOS notes.
 
+`nub run dev` mounts the Foldkit DevTools pane (bottom-right tab). The MCP
+relay listens on `127.0.0.1:9992`. Agents load `foldkit-devtools` from
+`.mcp.json` / `.grok/config.toml`; restart the agent after the first install.
+The app must be open in a browser tab for `foldkit_list_runtimes` to see a
+runtime.
+
 ## License
 
 MIT. See [LICENSE](./LICENSE).
