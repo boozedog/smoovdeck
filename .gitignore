@@ -16,3 +16,6 @@ target/
 
 .deno/
 .deno-desktop/
+
+desktop/.fhs-run
+desktop/native/*.so

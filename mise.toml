@@ -1,0 +1,12 @@
+# Deno canary via dl.deno.land (mise's built-in deno@canary uses a broken legacy URL).
+[tools."http:deno"]
+version = "latest"
+version_list_url = "https://dl.deno.land/canary-latest.txt"
+
+[tools."http:deno".platforms]
+linux-x64 = { url = "https://dl.deno.land/canary/{{version}}/deno-x86_64-unknown-linux-gnu.zip" }
+linux-arm64 = { url = "https://dl.deno.land/canary/{{version}}/deno-aarch64-unknown-linux-gnu.zip" }
+macos-x64 = { url = "https://dl.deno.land/canary/{{version}}/deno-x86_64-apple-darwin.zip" }
+macos-arm64 = { url = "https://dl.deno.land/canary/{{version}}/deno-aarch64-apple-darwin.zip" }
+windows-x64 = { url = "https://dl.deno.land/canary/{{version}}/deno-x86_64-pc-windows-msvc.zip" }
+windows-arm64 = { url = "https://dl.deno.land/canary/{{version}}/deno-aarch64-pc-windows-msvc.zip" }

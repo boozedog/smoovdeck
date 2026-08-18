@@ -1,0 +1,41 @@
+{
+  "name": "smoovdeck",
+  "version": "0.1.0",
+  "exports": {
+    ".": "./main.ts"
+  },
+  "tasks": {
+    "dev": "deno run --allow-env --allow-net --allow-read main.ts",
+    "check": "deno check main.ts && deno test --allow-read --allow-write --allow-net --allow-env main_test.ts",
+    "fmt": "deno fmt",
+    "fmt:check": "deno fmt --check",
+    "lint": "deno lint main.ts",
+    "test": "deno test --allow-read --allow-write --allow-net --allow-env main_test.ts",
+    "build:ui": "nub run --filter @smoovdeck/ui build",
+    "desktop:build:cef": "deno desktop --unstable-no-legacy-abort --allow-env --allow-net --allow-read --allow-ffi --allow-write --backend cef --include ./packages/ui/dist main.ts",
+    "desktop:linux": "deno task build:ui && deno task desktop:build:cef",
+    "desktop:ensure": "bash desktop/ensure-cef-build.sh",
+    "desktop:run:nix": "env SMOOVDECK_BACKEND=cef bash desktop/launch-nix.sh"
+  },
+  "unstable": ["no-legacy-abort"],
+  "fmt": {
+    "exclude": ["packages/ui/"]
+  },
+  "lint": {
+    "exclude": ["packages/ui/"]
+  },
+  "desktop": {
+    "app": {
+      "name": "smoovdeck",
+      "identifier": "dev.smoovdeck.app",
+      "icons": {
+        "linux": "./desktop/icons/app.png"
+      }
+    },
+    "backend": "cef",
+    "output": {
+      "linux": "./dist/smoovdeck.AppImage"
+    },
+    "errorReporting": {}
+  }
+}

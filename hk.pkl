@@ -1,0 +1,34 @@
+amends "package://github.com/jdx/hk/releases/download/v1.46.0/hk@1.46.0#/Config.pkl"
+
+local linters = new Mapping<String, Step> {
+  ["typecheck"] {
+    glob = List("**/*.{ts,tsx}")
+    exclude = List("**/node_modules/**", "**/dist/**")
+    check = "nub run typecheck"
+  }
+  ["test"] {
+    glob = List("**/*.test.ts")
+    exclude = List("**/node_modules/**", "**/dist/**")
+    check = "nub run test"
+  }
+  ["lint"] {
+    glob = List("**/*.{ts,tsx}")
+    exclude = List("**/node_modules/**", "**/dist/**")
+    check = "nub run lint"
+  }
+}
+
+hooks {
+  ["pre-commit"] {
+    fix = false
+    stash = "git"
+    steps {
+      ...linters
+      // === effect-lens:start ===
+      ["effect-lens"] {
+        check = "nub exec effect-lens check --mode unified --changed --workspace 'packages/ui'"
+      }
+      // === effect-lens:end ===
+    }
+  }
+}

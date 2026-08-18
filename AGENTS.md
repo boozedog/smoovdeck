@@ -8,13 +8,19 @@ interaction.
 
 ## Stack direction
 
-- **UI:** Foldkit MVU + [foldstryx](https://github.com/boozedog/foldstryx)
-  named primitives. No React as the public surface.
+- **UI:** Foldkit MVU + published foldstryx primitives
+  (`@foldstryx/foldkit@0.3.2`, `@foldstryx/styles@0.2.2`, Foldkit `0.147`,
+  Effect `4.0.0-rc.109`). Views take the frame builder: `view(config, h)`.
+  No React as the public surface.
+- **Chrome first.** foldstryx sidebar + inset header + workspace×stage board
+  (`Table.*` matrix, interactive cells). Do not invent a card board.
 - **Agents:** speak each tool's native protocol (ACP for Grok Build and
   Cursor Agent, Pi RPC for Pi). Do not scrape PTYs for agent control.
 - **Terminals:** PTY only for real terminal sessions (shell, git TUI).
-- **Host:** undecided. Do not add Electron, Tauri, or Deno Desktop scaffolding
-  until that choice is written down here.
+- **Host:** Deno Desktop with **CEF only** (`deno desktop --backend cef`).
+  Do not add Electron, Tauri, or WebKit webview. On NixOS follow
+  `desktop/README.md` (FHS + Wayland ozone). Do not add a sqlite
+  `RTLD_DEEPBIND` shim unless this app starts loading `@db/sqlite`.
 
 ## Non-negotiables
 
@@ -28,6 +34,10 @@ interaction.
    wording with no names or URLs.
 4. **Effect-first** in TypeScript application code. No `async`/`await` /
    `new Promise` in library-shaped modules unless a written exception exists.
+   Effect Lens is the gate: `nub run check:effect-lens` (unified, workspace
+   `packages/ui`). Pre-commit installs the same check via `hk.pkl`. UI
+   scripts use Nub (`nub run dev`, `nub test`, …); the Deno host uses
+   `deno task` / `deno.json`.
 5. **No commit or push** unless the user has approved the exact message
    (commit) or asked to push.
 

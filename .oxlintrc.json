@@ -1,0 +1,51 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "extends": ["./node_modules/@foldkit/oxlint-plugin/recommended.json"],
+  "plugins": ["typescript"],
+  "jsPlugins": [
+    {
+      "name": "stylex",
+      "specifier": "@stylexjs/eslint-plugin"
+    },
+    {
+      "name": "lens",
+      "specifier": "@boozedog/effect-lens/dist/plugin/index.js"
+    }
+  ],
+  "rules": {
+    "typescript/no-explicit-any": "error",
+    "no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+        "caughtErrorsIgnorePattern": "^_",
+        "destructuredArrayIgnorePattern": "^_"
+      }
+    ],
+    "lens/no-async-function": "error",
+    "lens/no-await-expression": "error",
+    "lens/no-new-promise": "error",
+    "stylex/valid-styles": "error",
+    "stylex/valid-shorthands": "error",
+    "stylex/no-unused": "error"
+  },
+  "overrides": [
+    {
+      "files": ["**/*.test.ts", "**/*.test.tsx"],
+      "rules": {
+        "lens/no-async-function": "off",
+        "lens/no-await-expression": "off",
+        "lens/no-new-promise": "off"
+      }
+    }
+  ],
+  "ignorePatterns": [
+    "node_modules/",
+    "dist/",
+    "**/*.d.ts",
+    "desktop/",
+    "main.ts",
+    "main_test.ts"
+  ]
+}
